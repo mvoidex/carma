@@ -4,6 +4,7 @@ CARMA_DIR=`pwd`
 DEPS_DIR=$CARMA_DIR/deps
 
 REPOS=("git@github.com:/f-me/vin-parser.git"
+       "git@github.com:/mvoidex/snaplet-redson.git"
        "git@github.com:/f-me/avaya-aes.git"
        "git@github.com:/f-me/xlsx-parser.git"
        "git@github.com:/jorpic/encoding.git")
