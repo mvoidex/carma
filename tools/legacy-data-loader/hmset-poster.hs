@@ -17,12 +17,14 @@ TODO Support more than one dependant form.
 import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State (get)
+import Control.Arrow (second)
 
 import qualified Data.ByteString as B
+import qualified Data.ByteString.Char8 as B
 import qualified Data.ByteString.Lazy as LB
 import qualified Data.ByteString.UTF8 as BU (fromString, toString)
 
-import Data.Maybe (catMaybes)
+import Data.Maybe (catMaybes, fromMaybe)
 import qualified Data.Map as M
 
 import Data.Enumerator as E hiding (foldM, map, head)
@@ -34,6 +36,7 @@ import Network.Browser
 import Network.URI (parseURI)
 
 import Data.Time.Clock
+import Data.Time.Clock.POSIX
 import Data.Time.Format
 
 import System.Console.CmdArgs.Implicit
@@ -260,9 +263,8 @@ serviceTransformations = [ tech
 -- | How to remap columns of case.
 caseMap :: FieldMap
 caseMap = let 
-    plain = fixUtfMap $ map (\(k, v) -> (k, Right v)) $
-          [ ("callTime", "Время звонка")
-          , ("callTaker", "Сотрудник РАМК (Обязательное поле)")
+    plain = fixUtfMap $ map (second Right)
+          [ ("callTaker", "Сотрудник РАМК (Обязательное поле)")
           , ("program", "Клиент (Обязательное поле)")
           , ("services", "Услуга (Обязательное поле)")
           , ("caller_name", "Фамилия звонящего")
@@ -273,29 +275,36 @@ caseMap = let
           , ("car_model", "Модель автомобиля")
           , ("car_color", "Цвет")
           , ("car_vin", "VIN автомобиля")
-          , ("car_buyDate", "Дата покупки автомобиля")
           , ("car_mileage", "Пробег автомобиля (км)")
           , ("address_address", "Адрес места поломки")
           , ("comment", "Описание неисправности со слов клиента")
           ]
     locale = defaultTimeLocale
     sourceFmt = "%m/%d/%Y"
-    targetFmt = "%d.%m.%Y"
-    -- Convert MM/DD/YYYY to DD.MM.YYYY
-    convertDate :: MapRow -> FieldValue
-    convertDate mr = case M.lookup (BU.fromString "Дата звонка") mr of
-                    Just v -> BU.fromString $
-                        let
-                            parsed :: Maybe UTCTime
-                            parsed = parseTime locale sourceFmt (BU.toString v)
-                        in
-                          case parsed of
-                            Just t -> formatTime locale targetFmt t
-                            Nothing -> ""
-                    Nothing -> ""
+    -- Convert MM/DD/YYYY to POSIX seconds
+    mkBuyDate mr = BU.fromString $ show $ fromMaybe 0 $ do
+        dStr <- BU.fromString "Дата покупки автомобиля" `M.lookup` mr
+        dUTC <- parseTime locale sourceFmt (BU.toString dStr) :: Maybe UTCTime
+        return $ round $ utcTimeToPOSIXSeconds dUTC
+
+    mkCallDate mr = BU.fromString $ show $ fromMaybe 0 $ do
+        dStr <- BU.fromString "Дата звонка" `M.lookup` mr
+        dUTC <- parseTime locale sourceFmt (BU.toString dStr) :: Maybe UTCTime
+        let dInt = round $ utcTimeToPOSIXSeconds dUTC
+        -- read time and convert it to number of seconds since midnight
+        -- we need this because '%R' format allows only zero padded values
+        let tInt = fromMaybe 0 $ do
+              tStr <- BU.fromString "Время звонка" `M.lookup` mr
+              (h,mStr) <- B.readInt tStr
+              (m,"")   <- B.readInt $ B.tail mStr
+              return $ (h*60 + m)*60
+        return $ dInt + tInt
     in
-      M.insert "car_buyDate" (Function convertDate) $
-        M.insert "callDate" (Function convertDate) plain
+      M.insert "car_buyDate" (Function mkBuyDate) $
+        M.insert "callDate" (Function mkCallDate) $
+           plain
+
+
 
 -- | Build new commit from row and commit spec.
 remapRow :: MapRow -> FieldMap -> MapRow
@@ -391,7 +400,7 @@ create h modelName commit = browse $ withBrowserState h $ do
                      ++ "/" ++ BU.toString ident
         let rq   = mkRequest' PUT uri $ Aeson.encode commit
         (_,rsp) <- assertStatus (2,0,4) $ request rq
-        return $ Right $ B.concat [modelName, ":", ident]
+        return $ Right ident
 
 
 assertStatus code f = f >>= \(uri,rsp) ->

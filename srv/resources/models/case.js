@@ -7,20 +7,39 @@
     "canDelete": true,
     "applications": [
         {
-            "targets": true,
-            "canWrite": true,
-            "canRead": true
-        },
+            "targets": ["caseAddress_address"],
+            "meta": {
+                "label": "Адрес места поломки"
+            }
+        },        
         {
             "targets": ["car_model"],
             "meta": {
                 "dictionaryParent": "car_make"
+            }
+        },
+        {
+            "targets": ["car_vin", "car_make", "car_model", "car_plateNum",
+                        "car_color", "car_transmission", "car_engine",
+                        "car_liters", "car_capacity", "car_dims",
+                        "car_weight", "car_checkPeriod", "car_class",
+                        "car_buyDate", "car_mileage", "car_checkupDate",
+                        "car_checkupMileage"],
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["front", "back", "head"]
+        },
+        {
+            "targets": ["car_plateNum"],
+            "meta": {
+                "mainToo": true
             }
         }
     ],
     "fields": [
         {
             "name": "comment",
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["front", "back", "head"],
             "type": "dictionary",
             "meta": {
                 "dictionaryName": "Wazzup",
@@ -29,7 +48,23 @@
             }
         },
         {
+            "name": "notVandal",
+            "type": "checkbox",
+            "meta": {
+                "label": "Не вандализм"
+            }
+        },
+        {
+            "name": "notAccident",
+            "type": "checkbox",
+            "meta": {
+                "label": "Не ДТП"
+            }
+        },
+        {
             "name": "diagnosis1",
+            "canRead": ["front", "back", "head"],
+            "canWrite": ["front", "back", "head"],
             "type": "dictionary",
             "meta": {
                 "dictionaryName": "Diagnosis1",
@@ -38,6 +73,8 @@
         },            
         {
             "name": "diagnosis2",
+            "canRead": ["front", "back", "head"],
+            "canWrite": ["front", "back", "head"],
             "type": "dictionary",
             "meta": {
                 "dictionaryName": "Diagnosis2",
@@ -45,13 +82,19 @@
             }
         },
         {
-            "name": "diagnosis3"
+            "name": "diagnosis3",
+            "canRead": ["front", "back", "head"],
+            "canWrite": ["front", "back", "head"]
         },
         {
-            "name": "diagnosis4"
+            "name": "diagnosis4",
+            "canRead": ["front", "back", "head"],
+            "canWrite": ["front", "back", "head"]
         },
         {
             "name": "caller",
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["front", "back", "head"],
             "groupName": "contact",
             "meta": {
                 "label": "Клиент"
@@ -63,6 +106,8 @@
         },
         {
             "name": "program",
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["front", "back", "head"],
             "index": true,
             "type": "dictionary",
             "meta": {
@@ -72,6 +117,29 @@
                 "targetCategory": "program"
             }
         },
+        {
+            "name": "caseAddress",
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["front", "back", "head"],
+            "groupName": "address"
+        },        
+        {
+            "name": "temperature",
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["front", "back", "head"],
+            "meta": {
+                "label": "Температура"
+            }
+        },        
+        {
+            "name": "dealerCause",
+            "canRead": ["front", "back", "head"],
+            "canWrite": ["back", "head"],
+            "meta": {
+                "label": "Причина неисправности со слов дилера"
+            },
+            "type": "textarea"
+        },          
         {
             "name": "callDate",
             "index": true,
@@ -84,6 +152,7 @@
         },
         {
             "name": "callTaker",
+            "canRead": ["front", "back", "head", "parguy"],
             "meta": {
                 "label": "Сотрудник РАМК",
                 "required": true,
@@ -92,6 +161,8 @@
         },
         {
             "name": "status",
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["head"],
             "type": "dictionary",
             "meta": {
                 "required": true,
@@ -100,7 +171,18 @@
             }
         },
         {
+            "name": "betaComment",
+            "canRead": ["front", "back", "head", "parguy"],
+            "canWrite": ["front", "back", "head", "parguy"],
+            "meta": {
+                "label": "Комментарии"
+            },
+            "type": "textarea"
+        },        
+        {
             "name": "services",
+            "canRead": true,
+            "canWrite": true,
             "type": "reference",
             "meta": {
                 "label": "Услуги"
