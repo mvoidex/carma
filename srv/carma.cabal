@@ -18,6 +18,11 @@ Executable carma
   hs-source-dirs: src
   main-is: Main.hs
 
+  Other-modules:
+    Application,
+    Snap.Snaplet.AvayaAES,
+    Snap.Snaplet.Candibober
+
   Build-depends:
     aeson                       == 0.6.*,
     avaya-aes                   == 0.0.*,
