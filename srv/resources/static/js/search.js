@@ -45,7 +45,7 @@ function doSearch() {
     var t = $el("searchtable").dataTable();
     var term = $el("table-query").val();
     var method = "search/?";
-    method += "_searchString=" + term + "&";
+    method += "q=" + term + "&";
     //for (f in searchFields) {
     //    method += (searchFields[f] + "=" + term + "&");
     //};
