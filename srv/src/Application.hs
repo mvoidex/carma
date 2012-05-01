@@ -130,13 +130,14 @@ sessionTimeout = Nothing
 -- | The application initializer.
 appInit :: SnapletInit App App
 appInit = makeSnaplet "app" "Forms application" Nothing $ do
-  c <- nestSnaplet "candibober" candibober candiboberInit
 
+  c <- nestSnaplet "candibober" candibober candiboberInit
+  
   h <- nestSnaplet "heist" heist $ heistInit "resources/templates"
   addAuthSplices auth
 
   r <- nestSnaplet "_" redson $ redsonInit auth
-
+  
   cfg <- getSnapletUserConfig
   sesKey <- liftIO $
             lookupDefault "resources/private/client_session_key.aes"
@@ -153,11 +154,13 @@ appInit = makeSnaplet "app" "Forms application" Nothing $ do
 
   s <- nestSnaplet "session" session $
        initCookieSessionManager sesKey "_session" sessionTimeout
+  
   a <- nestSnaplet "auth" auth $
        initJsonFileAuthManager
        defAuthSettings{ asSiteKey = rmbKey
                       , asRememberPeriod = Just (rmbPer * 24 * 60 * 60)}
                                session authDb
+                               
   v <- nestSnaplet "vin" vin vinInit
 
   sTime <- liftIO getCurrentTime

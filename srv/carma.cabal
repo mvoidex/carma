@@ -21,7 +21,11 @@ Executable carma
   Other-modules:
     Application,
     Snap.Snaplet.AvayaAES,
-    Snap.Snaplet.Candibober
+    Snap.Snaplet.Candibober,
+    Snap.Snaplet.Candibober.Date,
+    Snap.Snaplet.Candibober.Number,
+    Snap.Snaplet.Candibober.String,
+    Snap.Snaplet.Candibober.Types
 
   Build-depends:
     aeson                       == 0.6.*,
